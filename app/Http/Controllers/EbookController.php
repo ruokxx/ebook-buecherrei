@@ -11,8 +11,9 @@ class EbookController extends Controller
 {
     public function index()
     {
-        $ebooks = Ebook::latest()->get();
-        return view('ebooks.index', compact('ebooks'));
+        // Group all ebooks by their genre
+        $genres = Ebook::latest()->get()->groupBy('genre');
+        return view('ebooks.index', compact('genres'));
     }
 
     public function create()
@@ -43,6 +44,9 @@ class EbookController extends Controller
         $absolutePath = Storage::disk('public')->path($filePath);
         $title = $this->extractTitle($absolutePath, $fileType);
 
+        // Detect Genre
+        $genre = $this->detectGenre($absolutePath, $fileType);
+
         // Parse Chapters
         $chaptersCount = $this->countChapters($absolutePath, $fileType);
 
@@ -50,6 +54,7 @@ class EbookController extends Controller
             'title' => $title,
             'filename' => $fileName,
             'file_type' => $fileType,
+            'genre' => $genre,
             'chapters_count' => $chaptersCount,
         ]);
 
@@ -189,5 +194,73 @@ class EbookController extends Controller
         }
 
         return 'Unbekanntes Buch';
+    }
+
+    private function detectGenre($filePath, $fileType)
+    {
+        $text = '';
+        if ($fileType === 'pdf') {
+            try {
+                $parser = new Parser();
+                $pdf = $parser->parseFile($filePath);
+                // Get the first few pages of text to categorize
+                $pages = $pdf->getPages();
+                $samplePages = array_slice($pages, 0, min(15, count($pages))); // Look at first 15 pages
+                foreach ($samplePages as $page) {
+                    $text .= $page->getText() . ' ';
+                }
+            }
+            catch (\Exception $e) {
+            // If parsing fails for categorization, just use a fallback
+            }
+        }
+        elseif ($fileType === 'txt') {
+            $content = file_get_contents($filePath);
+            if (!mb_check_encoding($content, 'UTF-8')) {
+                $content = mb_convert_encoding($content, 'UTF-8', 'ISO-8859-1, Windows-1252');
+            }
+            // Take the first ~8000 characters to evaluate
+            $text = mb_substr($content, 0, 8000);
+        }
+
+        if (empty(trim($text))) {
+            return 'Sonstiges';
+        }
+
+        $text = strtolower($text);
+
+        // Define genres and their associated keywords (German mostly, as expected)
+        $genres = [
+            'Fantasy' => ['drache', 'magie', 'zauber', 'schwert', 'könig', 'elfen', 'zwerge', 'ritter', 'magier', 'dämon', 'orakel'],
+            'Sci-Fi' => ['raumschiff', 'planet', 'laser', 'alien', 'zukunft', 'universum', 'roboter', 'ki', 'künstliche intelligenz', 'cyborg', 'galaxie', 'hyperraum'],
+            'Krimi / Thriller' => ['mord', 'polizei', 'ermittler', 'kommissar', 'blut', 'leiche', 'tatort', 'alibi', 'verbrechen', 'waffe', 'detektiv', 'mörder'],
+            'Romanze' => ['liebe', 'herz', 'kuss', 'leidenschaft', 'gefühle', 'hochzeit', 'verliebt', 'romantik', 'sehnsucht'],
+            'Horror' => ['angst', 'schrecken', 'geist', 'blut', 'dunkelheit', 'verflucht', 'monster', 'grauen', 'panik', 'mörderisch'],
+            'Sachbuch / Bildung' => ['studie', 'analyse', 'geschichte', 'wissenschaft', 'gesellschaft', 'fakten', 'konzept', 'theorie', 'forschung', 'einführung', 'kapital', 'ökonomie'],
+            'Kinderbuch' => ['bärchen', 'prinzessin', 'zauberwald', 'tiere', 'abenteuer', 'spielen', 'fee', 'zauberspruch'],
+        ];
+
+        $scores = [];
+        foreach ($genres as $genre => $words) {
+            $scores[$genre] = 0;
+            foreach ($words as $word) {
+                // Count occurrences of the word in the text chunk
+                $scores[$genre] += substr_count($text, $word);
+            }
+        }
+
+        // Sort genres by score descending
+        arsort($scores);
+
+        // Get the top genre
+        $topGenre = key($scores);
+        $topScore = current($scores);
+
+        // If no keyword was found at all, return default
+        if ($topScore === 0) {
+            return 'Sonstiges';
+        }
+
+        return $topGenre;
     }
 }

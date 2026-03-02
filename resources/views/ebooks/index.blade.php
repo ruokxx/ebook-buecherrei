@@ -37,7 +37,7 @@
     }
 
     .book-card {
-        background: rgba(30, 41, 59, 0.6);
+        background: rgba(31, 41, 55, 0.6); /* Match gray glass */
         border: 1px solid rgba(255,255,255,0.05);
         border-radius: 12px;
         padding: 1rem;
@@ -45,25 +45,26 @@
         flex-direction: column;
         align-items: center;
         text-align: center;
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, background 0.4s ease;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease;
         backdrop-filter: blur(10px);
         min-width: 200px;
         flex-shrink: 0;
         position: relative;
+        /* Keep radius solid during hover */
+        overflow: hidden; 
+        -webkit-mask-image: -webkit-radial-gradient(white, black);
     }
 
     .book-card:hover {
         transform: scale(1.08) translateY(-10px);
         box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-        background: rgba(30, 41, 59, 0.95);
         z-index: 10;
-        border-color: rgba(255,255,255,0.2);
+        border-color: rgba(249, 115, 22, 0.5); /* Orange border glow */
     }
 
     .book-cover {
         width: 130px;
         height: 180px;
-        background: linear-gradient(135deg, #1e293b, #0f172a);
         border-radius: 4px 12px 12px 4px;
         box-shadow: inset 4px 0 10px rgba(0,0,0,0.5), 5px 5px 15px rgba(0,0,0,0.5);
         margin-bottom: 1.2rem;
@@ -74,8 +75,37 @@
         position: relative;
         font-weight: 800;
         letter-spacing: 2px;
-        color: rgba(255,255,255,0.8);
+        color: rgba(255,255,255,0.95);
         border-right: 1px solid rgba(255,255,255,0.05);
+        background-color: #0f172a; /* Fallback */
+        background-size: cover;
+        background-position: center;
+        overflow: hidden;
+    }
+
+    /* Dark Overlay to make the text pop */
+    .book-cover::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.7), rgba(0, 0, 0, 0.85));
+        z-index: 1;
+    }
+
+    .book-cover > span {
+        z-index: 2;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: normal;
+        color: rgba(255,255,255,0.95);
+        text-align: center;
+        padding: 0 0.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.3;
     }
 
     .book-cover::before {
@@ -85,12 +115,12 @@
         top: 0;
         bottom: 0;
         width: 3px;
-        background: rgba(0,0,0,0.3);
+        background: rgba(0,0,0,0.4);
         box-shadow: 1px 0 2px rgba(255,255,255,0.1);
+        z-index: 3;
     }
     
-    .book-cover.txt { background: linear-gradient(135deg, #065f46, #047857); }
-    .book-cover.pdf { background: linear-gradient(135deg, #991b1b, #b91c1c); }
+    /* Removed the format specific badge colors so the title stays white */
 
     .book-title {
         font-size: 1.1rem;
@@ -160,34 +190,39 @@
     <h1>Meine Bibliothek</h1>
 </div>
 
-@if($ebooks->count() > 0)
-    <h2 class="row-title">Zuletzt hinzugefügt</h2>
-@endif
-
-<div class="netflix-row">
-    @forelse($ebooks as $book)
-        <div class="book-card">
-            <div class="book-cover {{ strtolower($book->file_type) }}">
-                {{ strtoupper($book->file_type) }}
+@forelse($genres as $genreName => $ebooks)
+    <h2 class="row-title">{{ $genreName }}</h2>
+    <div class="netflix-row">
+        @foreach($ebooks as $book)
+            <div class="book-card">
+                @php
+                    // Generate a deterministic hash based on the book title for the image seed
+                    $seed = md5($book->title);
+                @endphp
+                <div class="book-cover {{ strtolower($book->file_type) }}" style="background-image: url('https://picsum.photos/seed/{{ $seed }}/130/180');">
+                    <span title="{{ $book->title }}">{{ $book->title }}</span>
+                </div>
+                <div class="book-title" title="{{ $book->title }}">
+                    {{ Str::limit($book->title, 35) }}
+                </div>
+                <div class="book-meta">
+                    {{ $book->chapters_count }} Kapitel &bull; {{ strtoupper($book->file_type) }}
+                </div>
+                <div class="book-actions">
+                    <a href="{{ route('ebooks.read', $book) }}" class="btn" style="width: 100%;">JETZT LESEN</a>
+                </div>
             </div>
-            <div class="book-title" title="{{ $book->title }}">
-                {{ Str::limit($book->title, 35) }}
-            </div>
-            <div class="book-meta">
-                {{ $book->chapters_count }} Kapitel &bull; {{ strtoupper($book->file_type) }}
-            </div>
-            <div class="book-actions">
-                <a href="{{ route('ebooks.read', $book) }}" class="btn" style="width: 100%;">JETZT LESEN</a>
-            </div>
-        </div>
-    @empty
-        <div class="empty-state">
-            <h3>Noch keine Bücher vorhanden</h3>
-            <p class="book-meta" style="color:var(--text-muted)">Lade dein erstes Ebook hoch, um zu starten.</p>
-            <br>
+        @endforeach
+    </div>
+@empty
+    <div class="empty-state">
+        <h3>Noch keine Bücher vorhanden</h3>
+        <p class="book-meta" style="color:var(--text-muted)">Lade als Admin dein erstes Ebook hoch, um zu starten.</p>
+        <br>
+        @auth
             <a href="{{ route('ebooks.create') }}" class="btn">Jetzt hochladen</a>
-        </div>
-    @endforelse
-</div>
+        @endauth
+    </div>
+@endforelse
 
 @endsection

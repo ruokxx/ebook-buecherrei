@@ -9,13 +9,14 @@
 
 - **🚀 Interaktiver Reader:** Lese TXT und PDF Dateien direkt performant im Browser, ohne sie herunterladen zu müssen.
 - **📄 Paginierung:** Perfektes Leseerlebnis für Textdateien durch intelligente Seiten-Aufteilung (Pagination) – kein endloses Scrollen mehr!
-- **🎨 Modernes Design:** Atemberaubendes **Glassmorphism-UI** im Dark-Mode. 
-- **🎬 Netflix-Dashboard:** Bücherübersicht im cineastischen Filmposter-Look mit Zoom-Hover-Effekten.
+- **🎨 Modernes Design:** Atemberaubendes **Glassmorphism-UI** im neuen Grey/Orange Theme. 
+- **🎬 Netflix-Dashboard:** Bücherübersicht im cineastischen Filmposter-Look. Jedes Buch erhält automatisch generierte **echte Mini-Bilder (Cover)** basierend auf dem Titel, die beim Hovern weich heranzoomen.
 - **🔍 Smarte Extraktion:** 
   - Liest automatisch echte Buchtitel aus dem Datei-Inneren aus – nie wieder furchtbare Dateinamen im Dashboard!
   - Durchsucht den Text automatisch nach Kapiteln (z.B. "Kapitel 1") und zählt diese mit.
   - Formatiert gefundene Kapitel im Text-Reader visuell als große und farbige Überschriften.
-- **🔒 Admin-Sicherheit:** Exklusiver Zugang zum Buch-Upload. Nur eingeloggte Admins (mit sicherem Passwort) können neue Werke zur Bücherei beisteuern.
+- **🧠 Automatische Genre Erkennung:** Das System scannt Buchinhalte beim Upload und ordnet sie intelligent eigenen Netflix-Kategorien (z.B. Sci-Fi, Thriller) zu.
+- **🔒 Admin-Panel:** Exklusiver Bereich zum Upload, Bearbeiten und permanenten Löschen von Büchern.
 - **📱 Responsive:** Komplett Smartphone- und Tablet-optimiert.
 
 ---

@@ -21,4 +21,9 @@ Route::post('/logout', [AuthController::class , 'logout'])->name('logout');
 Route::middleware('auth')->group(function () {
     Route::get('/upload', [EbookController::class , 'create'])->name('ebooks.create');
     Route::post('/upload', [EbookController::class , 'store'])->name('ebooks.store');
+
+    // Admin Panel
+    Route::get('/admin', [\App\Http\Controllers\AdminController::class , 'index'])->name('admin.index');
+    Route::put('/admin/ebooks/{ebook}/genre', [\App\Http\Controllers\AdminController::class , 'updateGenre'])->name('admin.update-genre');
+    Route::delete('/admin/ebooks/{ebook}', [\App\Http\Controllers\AdminController::class , 'destroy'])->name('admin.destroy');
 });

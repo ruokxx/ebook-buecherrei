@@ -14,6 +14,7 @@ class Ebook extends Model
         'filename',
         'file_type',
         'chapters_count',
+        'genre',
         'cover_path',
     ];
 }

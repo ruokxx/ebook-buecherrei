@@ -7,21 +7,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0f172a;
-            --glass-bg: rgba(30, 41, 59, 0.7);
+            /* Gray/Orange Theme */
+            --bg-color: #111827; /* Dark Gray */
+            --glass-bg: rgba(31, 41, 55, 0.7); /* Lighter Gray Glass */
             --glass-border: rgba(255, 255, 255, 0.1);
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --text-light: #f8fafc;
-            --text-muted: #94a3b8;
+            --primary: #f97316; /* Vibrant Orange */
+            --primary-hover: #ea580c; /* Darker Orange */
+            --text-light: #f3f4f6; /* Off white */
+            --text-muted: #9ca3af; /* Soft gray text */
         }
 
         body {
             margin: 0;
             font-family: 'Inter', sans-serif;
             background: var(--bg-color);
-            background-image: radial-gradient(circle at top right, #1e1b4b, transparent 40%),
-                              radial-gradient(circle at bottom left, #064e3b, transparent 40%);
+            background-image: radial-gradient(circle at top right, #1f2937, transparent 40%),
+                              radial-gradient(circle at bottom left, #431407, transparent 40%);
             background-attachment: fixed;
             color: var(--text-light);
             min-height: 100vh;
@@ -159,13 +160,14 @@
         📚 Ebook Bücherei
     </a>
     <div class="links">
-        <a href="{{ route('ebooks.index') }}">Dashboard</a>
+        <a href="{{ route('ebooks.index') }}">Startseite</a>
         @auth
-            <a href="{{ route('ebooks.create') }}" class="btn">+ Upload</a>
+            <a href="{{ route('admin.index') }}" class="btn" style="background:var(--primary); margin-left:1rem; border:none;">Admin Panel</a>
+            <a href="{{ route('ebooks.create') }}" class="btn" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.1); margin-left: 0.5rem;">+ Upload</a>
             
             <form method="POST" action="{{ route('logout') }}" style="display: inline;">
                 @csrf
-                <button type="submit" class="btn" style="background: transparent; border: 1px solid var(--glass-border); margin-left: 1rem;">Logout</button>
+                <button type="submit" class="btn" style="background: transparent; border: 1px solid var(--glass-border); margin-left: 0.5rem;">Logout</button>
             </form>
         @endauth
     </div>
