@@ -5,12 +5,8 @@
     .login-container {
         max-width: 400px;
         margin: 4rem auto;
-        background: var(--glass-bg);
-        border: 1px solid var(--glass-border);
-        border-radius: 12px;
         padding: 2.5rem;
-        backdrop-filter: blur(12px);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        /* Using global .glass class for background, border, blur, shadow */
     }
     
     .login-header {
@@ -21,36 +17,13 @@
     .login-header h1 {
         margin: 0;
         font-size: 1.8rem;
-        color: #fff;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
     
     .form-group {
         margin-bottom: 1.5rem;
-    }
-    
-    .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        color: var(--text-light);
-        font-weight: 600;
-    }
-    
-    .form-control {
-        width: 100%;
-        padding: 0.75rem;
-        background: rgba(15, 23, 42, 0.8);
-        border: 1px solid rgba(255,255,255,0.2);
-        color: #fff;
-        border-radius: 8px;
-        font-family: inherit;
-        font-size: 1rem;
-        box-sizing: border-box;
-    }
-    
-    .form-control:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
     }
     
     .btn-submit {
@@ -66,9 +39,16 @@
         margin-top: 0.25rem;
         display: block;
     }
+
+    @media (max-width: 768px) {
+        .login-container {
+            margin: 2rem 1rem;
+            padding: 1.5rem;
+        }
+    }
 </style>
 
-<div class="login-container">
+<div class="login-container glass">
     <div class="login-header">
         <h1>Admin Login</h1>
     </div>

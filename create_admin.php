@@ -8,6 +8,8 @@ $user = \App\Models\User::where('email', 'admin@example.com')->first();
 if ($user) {
     echo "Found user: " . $user->email . "\n";
     echo "Password starts with: " . substr($user->password, 0, 10) . "\n";
+    $user->update(['is_admin' => true]);
+    echo "Set is_admin to true.\n";
 }
 else {
     echo "User not found. Creating one...\n";
@@ -15,6 +17,7 @@ else {
         'name' => 'Admin',
         'email' => 'admin@example.com',
         'password' => bcrypt('password'),
+        'is_admin' => true,
     ]);
-    echo "User created.\n";
+    echo "User created and set as admin.\n";
 }

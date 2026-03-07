@@ -112,8 +112,33 @@ class EbookController extends Controller
             $textContent = preg_replace($pattern, '<h2 style="color: var(--primary); margin-top: 2rem; margin-bottom: 1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">$0</h2>', $textContent);
         }
 
+        $readingSession = null;
+        if (auth()->check()) {
+            $readingSession = \App\Models\ReadingSession::firstOrCreate(
+            ['user_id' => auth()->id(), 'ebook_id' => $ebook->id]
+            );
+        }
+
         // We already escaped the textContent manually to safely inject HTML chapter tags
-        return view('ebooks.read', compact('ebook', 'textContent', 'currentPage', 'totalPages'));
+        return view('ebooks.read', compact('ebook', 'textContent', 'currentPage', 'totalPages', 'readingSession'));
+    }
+
+    public function saveProgress(Request $request, Ebook $ebook)
+    {
+        $request->validate([
+            'progress' => 'required|integer|min:0|max:100',
+            'time_spent_seconds' => 'required|integer|min:0',
+        ]);
+
+        $session = \App\Models\ReadingSession::firstOrCreate(
+        ['user_id' => auth()->id(), 'ebook_id' => $ebook->id]
+        );
+
+        $session->progress = $request->progress;
+        $session->time_spent_seconds += $request->time_spent_seconds;
+        $session->save();
+
+        return response()->json(['status' => 'success']);
     }
 
     private function countChapters($filePath, $fileType)

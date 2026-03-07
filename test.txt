@@ -1,0 +1,43 @@
+
+  [30;43;1m WARN [39;49;22m Your XML configuration validates against a deprecated schema. Migrate your XML configuration using "--migrate-configuration"!
+
+   PASS  Tests\Unit\ExampleTest
+  ✓ that true is true
+
+   PASS  Tests\Feature\EbookUploadTest
+  ✓ uploading t… 0.28s  
+  ✓ uploading p… 0.03s  
+
+   PASS  Tests\Feature\ExampleTest
+  ✓ the applica… 0.03s  
+
+   FAIL  Tests\Feature\UserReadingTest
+  ✓ guest can s… 0.02s  
+  ⨯ user can re… 0.12s  
+  ✓ guest canno… 0.02s  
+  ✓ normal user… 0.03s  
+  ✓ admin can a… 0.03s  
+  ────────────────────  
+   FAILED  Tests\Fea…   
+  Failed asserting that two strings are equal.
+--- Expected
++++ Actual
+@@ @@
+-'http://localhost'
++'http://localhost/email/verify'
+
+  at tests\Feature\UserReadingTest.php:31
+     27▕             'password' => 'password123',
+     28▕             'password_confirmation' => 'password123',
+     29▕         ]);
+     30▕ 
+  ➜  31▕         $response->assertRedirect('/');
+     32▕         $this->assertDatabaseHas('users', ['email' => 'test@example.com', 'is_admin' => false]);
+     33▕     }
+     34▕ 
+     35▕     public function test_guest_cannot_access_admin_panel()
+
+
+  Tests:    1 failed, 8 passed (17 assertions)
+  Duration: 0.71s
+

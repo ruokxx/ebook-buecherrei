@@ -46,4 +46,54 @@ class AdminController extends Controller
 
         return redirect()->back()->with('success', 'Buch erfolgreich gelöscht!');
     }
+
+    public function users()
+    {
+        // Get all users except current admin, with their reading sessions and ebooks
+        $users = \App\Models\User::where('id', '!=', auth()->id())
+            ->where('is_admin', false)
+            ->with(['readingSessions.ebook'])
+            ->latest()
+            ->get();
+
+        return view('admin.users', compact('users'));
+    }
+
+    public function deleteUser(\App\Models\User $user)
+    {
+        if ($user->is_admin) {
+            return redirect()->back()->with('error', 'Admins können nicht gelöscht werden.');
+        }
+
+        $user->delete();
+        return redirect()->back()->with('success', 'Benutzer erfolgreich gelöscht!');
+    }
+
+    public function settings()
+    {
+        $settings = [
+            'smtp_host' => \App\Models\Setting::get('smtp_host', '127.0.0.1'),
+            'smtp_port' => \App\Models\Setting::get('smtp_port', '2525'),
+            'smtp_user' => \App\Models\Setting::get('smtp_user', ''),
+            'smtp_password' => \App\Models\Setting::get('smtp_password', ''),
+            'smtp_encryption' => \App\Models\Setting::get('smtp_encryption', 'tls'),
+            'mail_from_address' => \App\Models\Setting::get('mail_from_address', 'hello@example.com'),
+            'mail_from_name' => \App\Models\Setting::get('mail_from_name', 'Bücherei'),
+            'verification_email_subject' => \App\Models\Setting::get('verification_email_subject', 'Bitte bestätige deine E-Mail-Adresse'),
+            'verification_email_body' => \App\Models\Setting::get('verification_email_body', "Hallo {name},\n\nbitte klicke auf den folgenden Link, um deine E-Mail-Adresse zu bestätigen und deinen Account freizuschalten:\n\n{verification_url}\n\nViele Grüße,\nDein Bücherei Team"),
+        ];
+
+        return view('admin.settings', compact('settings'));
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $data = $request->except('_token');
+
+        foreach ($data as $key => $value) {
+            \App\Models\Setting::set($key, $value);
+        }
+
+        return redirect()->route('admin.settings')->with('success', 'Einstellungen erfolgreich gespeichert.');
+    }
 }

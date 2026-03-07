@@ -18,7 +18,7 @@ class EbookUploadTest extends TestCase
         $content = "Kapitel 1: Der Anfang\n\nEin bisschen Text.\n\nKapitel 2: Die Mitte\n\nNoch mehr Text.\n\nKapitel 3: Das Ende\n\nEnde.";
         $file = UploadedFile::fake()->createWithContent('testbuch.txt', $content);
 
-        $user = \App\Models\User::factory()->create();
+        $user = \App\Models\User::factory()->create(['is_admin' => true]);
 
         $response = $this->actingAs($user)->post('/upload', [
             'ebook' => $file,
@@ -42,7 +42,7 @@ class EbookUploadTest extends TestCase
         // but it will test the upload mechanism and file extension handling)
         $file = UploadedFile::fake()->create('testbuch.pdf', 100, 'application/pdf');
 
-        $user = \App\Models\User::factory()->create();
+        $user = \App\Models\User::factory()->create(['is_admin' => true]);
 
         $response = $this->actingAs($user)->post('/upload', [
             'ebook' => $file,

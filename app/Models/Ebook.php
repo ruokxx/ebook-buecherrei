@@ -17,4 +17,9 @@ class Ebook extends Model
         'genre',
         'cover_path',
     ];
+
+    public function readingSessions()
+    {
+        return $this->hasMany(ReadingSession::class);
+    }
 }

@@ -49,7 +49,7 @@
 
     td {
         color: var(--text-light);
-        vertical-align: middle;
+        vertical-align: top;
     }
     
     tr:last-child td {
@@ -58,35 +58,6 @@
 
     tr:hover {
         background: rgba(255, 255, 255, 0.02);
-    }
-
-    .badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        background: rgba(59, 130, 246, 0.2);
-        color: #60a5fa;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        border: 1px solid rgba(59, 130, 246, 0.5);
-    }
-
-    .badge.pdf {
-        background: rgba(239, 68, 68, 0.2);
-        color: #f87171;
-        border-color: rgba(239, 68, 68, 0.5);
-    }
-
-    .badge.txt {
-        background: rgba(16, 185, 129, 0.2);
-        color: #34d399;
-        border-color: rgba(16, 185, 129, 0.5);
-    }
-
-    .actions {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
     }
 
     .btn-sm {
@@ -107,24 +78,38 @@
         background: rgba(239, 68, 68, 0.2);
         border-color: #f87171;
     }
-    
-    .genre-form {
-        display: flex;
-        gap: 0.5rem;
-    }
-    
+
     .empty-state {
         text-align: center;
         padding: 3rem;
         color: var(--text-muted);
     }
+
+    .progress-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.85rem;
+    }
+    
+    .progress-list li {
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .progress-list li:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
 </style>
 
 <div class="admin-header">
-    <h1>Admin Panel - Bücherverwaltung</h1>
+    <h1>Admin Panel - Benutzerverwaltung</h1>
     <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-        <a href="{{ route('admin.index') }}" class="btn">Bücher</a>
-        <a href="{{ route('admin.users') }}" class="btn btn-outline">Nutzer</a>
+        <a href="{{ route('admin.index') }}" class="btn btn-outline">Bücher</a>
+        <a href="{{ route('admin.users') }}" class="btn">Nutzer</a>
         <a href="{{ route('admin.settings') }}" class="btn btn-outline">Einstellungen</a>
         <a href="{{ route('ebooks.create') }}" class="btn btn-outline">+ Hochladen</a>
     </div>
@@ -134,41 +119,44 @@
     <table>
         <thead>
             <tr>
-                <th>Titel</th>
-                <th>Typ</th>
-                <th>Kapitel</th>
-                <th>Genre</th>
+                <th>Name</th>
+                <th>E-Mail</th>
+                <th>Registriert am</th>
+                <th>Leseverlauf & Fortschritt</th>
                 <th>Aktionen</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($ebooks as $book)
+            @forelse($users as $user)
                 <tr>
-                    <td style="font-weight: 600;">{{ Str::limit($book->title, 40) }}</td>
+                    <td style="font-weight: 600;">{{ $user->name }}</td>
+                    <td>{{ $user->email }}</td>
+                    <td>{{ $user->created_at->format('d.m.Y H:i') }}</td>
                     <td>
-                        <span class="badge {{ strtolower($book->file_type) }}">{{ strtoupper($book->file_type) }}</span>
-                    </td>
-                    <td>{{ $book->chapters_count }}</td>
-                    <td>
-                        <form action="{{ route('admin.update-genre', $book) }}" method="POST" class="genre-form">
-                            @csrf
-                            @method('PUT')
-                            <select name="genre" class="form-control" onchange="this.form.submit()">
-                                @foreach($allGenres as $genre)
-                                    <option value="{{ $genre }}" {{ $book->genre === $genre ? 'selected' : '' }}>
-                                        {{ $genre }}
-                                    </option>
+                        @if($user->readingSessions->count() > 0)
+                            <ul class="progress-list">
+                                @foreach($user->readingSessions as $session)
+                                    @if($session->ebook)
+                                        <li>
+                                            <strong>{{ Str::limit($session->ebook->title, 35) }}</strong><br>
+                                            <span style="color: var(--primary);">Fortschritt: {{ $session->progress }}%</span> | 
+                                            <span style="color: var(--text-muted);">Lesezeit: {{ floor($session->time_spent_seconds / 60) }} Min.</span>
+                                        </li>
+                                    @endif
                                 @endforeach
-                            </select>
-                        </form>
+                            </ul>
+                            <div style="margin-top: 1rem; font-weight: 600; font-size: 0.85rem;">
+                                Gesamte Lesezeit: {{ floor($user->readingSessions->sum('time_spent_seconds') / 60) }} Minuten
+                            </div>
+                        @else
+                            <span style="color: var(--text-muted);">Noch keine Bücher gelesen.</span>
+                        @endif
                     </td>
-                    <td class="actions">
-                        <a href="{{ route('ebooks.read', $book) }}" class="btn btn-sm" target="_blank" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">Ansehen</a>
-                        
-                        <form action="{{ route('admin.destroy', $book) }}" method="POST" onsubmit="return confirm('Möchtest du dieses Buch wirklich endgültig löschen? Die Datei wird physisch vom Server entfernt.');">
+                    <td>
+                        <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('Möchtest du diesen Benutzer unwiderruflich löschen? Alle Daten und Lesefortschritte gehen verloren.');">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger">Löschen</button>
+                            <button type="submit" class="btn-danger btn-sm">Konto löschen</button>
                         </form>
                     </td>
                 </tr>
@@ -176,7 +164,7 @@
                 <tr>
                     <td colspan="5">
                         <div class="empty-state">
-                            Bisher wurden keine Bücher in die Bibliothek geladen.
+                            Es haben sich noch keine Benutzer registriert.
                         </div>
                     </td>
                 </tr>
@@ -184,5 +172,4 @@
         </tbody>
     </table>
 </div>
-
 @endsection
