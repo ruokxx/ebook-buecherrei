@@ -13,7 +13,7 @@ class AiGenerationService
     public function __construct()
     {
         $this->client = new Client([
-            'base_uri' => 'https://api.openai.com/v1/',
+            'base_uri' => 'https://generativelanguage.googleapis.com/v1beta/models/',
             'timeout' => 120, // Book generation can take time
         ]);
     }
@@ -23,11 +23,30 @@ class AiGenerationService
      */
     protected function getApiKey()
     {
-        return Setting::get('llm_api_key', config('services.openai.key', env('OPENAI_API_KEY')));
+        return Setting::get('llm_api_key', config('services.gemini.key', env('GEMINI_API_KEY')));
     }
 
     /**
-     * Interacts with the OpenAI API to act as a chat assistant to gather book details.
+     * Maps the internal history (OpenAI style) format to Gemini's format.
+     */
+    protected function mapHistoryToGemini(array $history)
+    {
+        $geminiContents = [];
+        foreach ($history as $msg) {
+            if ($msg['role'] === 'system') {
+                continue;
+            }
+            $role = $msg['role'] === 'assistant' ? 'model' : 'user';
+            $geminiContents[] = [
+                'role' => $role,
+                'parts' => [['text' => $msg['content']]]
+            ];
+        }
+        return $geminiContents;
+    }
+
+    /**
+     * Interacts with the Gemini API to act as a chat assistant to gather book details.
      */
     public function chatStep(array $history, string $userMessage)
     {
@@ -47,36 +66,35 @@ class AiGenerationService
             . "[READY_TO_GENERATE]\n"
             . "Dadurch weiß das System, dass es im Hintergrund mit der Buch-Generierung beginnen kann. Teile dem User mit, dass er einen Moment Geduld haben soll.";
 
-        $messages = [
-            ['role' => 'system', 'content' => $systemPrompt]
-        ];
-
-        // Append history
-        foreach ($history as $msg) {
-            $messages[] = $msg;
-        }
+        $contents = $this->mapHistoryToGemini($history);
 
         // Append new message
         if (!empty($userMessage)) {
-            $messages[] = ['role' => 'user', 'content' => $userMessage];
+            $contents[] = [
+                'role' => 'user',
+                'parts' => [['text' => $userMessage]]
+            ];
         }
 
         try {
-            $response = $this->client->post('chat/completions', [
+            $response = $this->client->post('gemini-1.5-flash:generateContent?key=' . $apiKey, [
                 'headers' => [
-                    'Authorization' => 'Bearer ' . $apiKey,
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
-                    'model' => 'gpt-4o-mini', // Fast, cheap, capable enough
-                    'messages' => $messages,
-                    'temperature' => 0.7,
+                    'system_instruction' => [
+                        'parts' => ['text' => $systemPrompt]
+                    ],
+                    'contents' => $contents,
+                    'generationConfig' => [
+                        'temperature' => 0.7,
+                    ]
                 ]
             ]);
 
             $body = json_decode((string)$response->getBody(), true);
 
-            return $body['choices'][0]['message']['content'] ?? 'Fehler beim Abrufen der Antwort.';
+            return $body['candidates'][0]['content']['parts'][0]['text'] ?? 'Fehler beim Abrufen der Antwort.';
 
         }
         catch (\Exception $e) {
@@ -104,31 +122,28 @@ class AiGenerationService
             . "4. Achte auf packende Beschreibungen, Dialoge und eine gute Länge.\n"
             . "Die Ausgabe MUSS REINER TEXT (plain text) sein, da er direkt als .txt Datei gespeichert wird.";
 
-        $messages = [
-            ['role' => 'system', 'content' => $systemPrompt]
-        ];
-
-        foreach ($history as $msg) {
-            $messages[] = $msg;
-        }
+        $contents = $this->mapHistoryToGemini($history);
 
         try {
-            $response = $this->client->post('chat/completions', [
+            $response = $this->client->post('gemini-1.5-flash:generateContent?key=' . $apiKey, [
                 'headers' => [
-                    'Authorization' => 'Bearer ' . $apiKey,
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
-                    'model' => 'gpt-4o', // Use a stronger model for actual book generation if desired, or stick to mini
-                    'messages' => $messages,
-                    'temperature' => 0.8, // Slightly higher for creativity
-                    'max_tokens' => 4000, // Make sure it can output a lot of text
+                    'system_instruction' => [
+                        'parts' => ['text' => $systemPrompt]
+                    ],
+                    'contents' => $contents,
+                    'generationConfig' => [
+                        'temperature' => 0.8,
+                        'maxOutputTokens' => 8192,
+                    ]
                 ]
             ]);
 
             $body = json_decode((string)$response->getBody(), true);
 
-            return $body['choices'][0]['message']['content'] ?? 'Fehler bei der Buchgenerierung.';
+            return $body['candidates'][0]['content']['parts'][0]['text'] ?? 'Fehler bei der Buchgenerierung.';
 
         }
         catch (\Exception $e) {

@@ -90,8 +90,7 @@ class AiBookController extends Controller
             $bookContent = $this->aiService->generateBook($history);
 
             // 2. Ask the AI again just to extract a title from the context
-            $titleRequest = array_merge($history, [['role' => 'system', 'content' => 'Antworte NUR mit dem Titel des Buches, auf den wir uns geeinigt haben. Keine weiteren Worte, keine Anführungszeichen.']]);
-            $title = $this->aiService->chatStep($titleRequest, '');
+            $title = $this->aiService->chatStep($history, 'Bitte antworte ab jetzt NUR NOCH mit dem Titel des Buches, auf den wir uns geeinigt haben. Keine weiteren Worte, keine Anführungszeichen.');
             if (empty(trim($title)) || strlen($title) > 255) {
                 $title = "Ein KI-generiertes Abenteuer";
             }
