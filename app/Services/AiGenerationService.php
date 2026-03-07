@@ -59,14 +59,14 @@ class AiGenerationService
         }
 
         $systemPrompt = "Du bist ein freundlicher, kreativer Assistent für eine digitale E-Book-Bibliothek. Deine Aufgabe ist es, zusammen mit dem User ein Buch (ca. 5-10 Kapitel) zu generieren.\n"
-            . "Gehe in folgenden Schritten vor:\n"
-            . "1. Frage den User nach dem Genre.\n"
-            . "2. Frage nach der Hauptfigur (Name, Eigenschaften).\n"
-            . "3. Frage ganz kurz nach der grundlegenden Handlung oder dem Ziel der Geschichte.\n"
-            . "4. Frage, wie der Titel lauten soll (oder schlage einen vor).\n"
-            . "Wenn du alle diese Informationen hast (Genre, Figur, Handlung, Titel), antworte EXAKT mit dem folgenden Schlüsselwort auf einer eigenen Zeile am Ende deiner Nachricht:\n"
+            . "WICHTIGE REGEL: Gehe Schritt für Schritt vor! Stelle IMMER NUR EINE EINZIGE FRAGE pro Nachricht und warte auf die Antwort des Users, bevor du zum nächsten Schritt gehst.\n\n"
+            . "Schritt 1: Frage den User nach dem Genre.\n"
+            . "Schritt 2: Sobald er das Genre genannt hat, frage nach der Hauptfigur (Name, Eigenschaften).\n"
+            . "Schritt 3: Sobald er die Hauptfigur genannt hat, frage ganz kurz nach der grundlegenden Handlung oder dem Ziel der Geschichte.\n"
+            . "Schritt 4: Sobald er die Handlung genannt hat, frage, wie der Titel lauten soll (oder schlage einen vor).\n"
+            . "Schritt 5: ERST WENN du alle 4 Informationen von ihm bekommen und bestätigt hast, antworte EXAKT mit dem folgenden Schlüsselwort auf einer eigenen Zeile am Ende deiner Nachricht:\n"
             . "[READY_TO_GENERATE]\n"
-            . "Dadurch weiß das System, dass es im Hintergrund mit der Buch-Generierung beginnen kann. Teile dem User mit, dass er einen Moment Geduld haben soll.";
+            . "Dadurch weiß das System, dass es im Hintergrund mit der Buch-Generierung beginnen kann. Teile dem User dann mit, dass er einen Moment Geduld haben soll.";
 
         $contents = $this->mapHistoryToGemini($history);
 
