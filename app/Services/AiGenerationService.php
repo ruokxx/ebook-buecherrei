@@ -82,8 +82,8 @@ class AiGenerationService
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
-                    'system_instruction' => [
-                        'parts' => ['text' => $systemPrompt]
+                    'systemInstruction' => [
+                        'parts' => [['text' => $systemPrompt]]
                     ],
                     'contents' => $contents,
                     'generationConfig' => [
@@ -130,8 +130,8 @@ class AiGenerationService
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
-                    'system_instruction' => [
-                        'parts' => ['text' => $systemPrompt]
+                    'systemInstruction' => [
+                        'parts' => [['text' => $systemPrompt]]
                     ],
                     'contents' => $contents,
                     'generationConfig' => [
