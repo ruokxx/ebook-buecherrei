@@ -148,6 +148,12 @@ class AiGenerationService
         }
         else {
             $contents[0]['parts'][0]['text'] = "SYSTEM-ANWEISUNG:\n" . $systemPrompt . "\n\nVERLAUF BEGINNT HIER:\n" . $contents[0]['parts'][0]['text'];
+
+            // Append the final trigger so the model knows it's time to write the book
+            $contents[] = [
+                'role' => 'user',
+                'parts' => [['text' => "Das waren alle Informationen. Bitte schreibe JETZT das komplette Buch. Denke an die Formatierungsregeln für die Kapitel. VERWENDE REINEN TEXT. Bedenke, ich brauche nur die Geschichte, keine Einleitung und keinen Schluss-Kommentar."]]
+            ];
         }
 
         try {
