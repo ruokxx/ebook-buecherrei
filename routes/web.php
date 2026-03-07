@@ -54,6 +54,7 @@ Route::middleware(['auth', \App\Http\Middleware\IsAdmin::class])->group(function
 
     // Admin Users
     Route::get('/admin/users', [\App\Http\Controllers\AdminController::class , 'users'])->name('admin.users');
+    Route::put('/admin/users/{user}/toggle-admin', [\App\Http\Controllers\AdminController::class , 'toggleAdmin'])->name('admin.users.toggle-admin');
     Route::delete('/admin/users/{user}', [\App\Http\Controllers\AdminController::class , 'deleteUser'])->name('admin.users.destroy');
 
     // Admin Settings

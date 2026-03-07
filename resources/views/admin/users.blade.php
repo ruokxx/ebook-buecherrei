@@ -129,11 +129,16 @@
         <tbody>
             @forelse($users as $user)
                 <tr>
-                    <td style="font-weight: 600;">{{ $user->name }}</td>
+                    <td style="font-weight: 600;">
+                        {{ $user->name }}
+                        @if($user->is_admin)
+                            <span class="badge" style="margin-left: 0.5rem; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border-color: rgba(245, 158, 11, 0.5);">Admin</span>
+                        @endif
+                    </td>
                     <td>{{ $user->email }}</td>
                     <td>{{ $user->created_at->format('d.m.Y H:i') }}</td>
                     <td>
-                        @if($user->readingSessions->count() > 0)
+                        @if(!$user->is_admin && $user->readingSessions->count() > 0)
                             <ul class="progress-list">
                                 @foreach($user->readingSessions as $session)
                                     @if($session->ebook)
@@ -148,16 +153,36 @@
                             <div style="margin-top: 1rem; font-weight: 600; font-size: 0.85rem;">
                                 Gesamte Lesezeit: {{ floor($user->readingSessions->sum('time_spent_seconds') / 60) }} Minuten
                             </div>
+                        @elseif($user->is_admin)
+                            <span style="color: var(--text-muted);">Admins haben kein Fortschritts-Tracking.</span>
                         @else
                             <span style="color: var(--text-muted);">Noch keine Bücher gelesen.</span>
                         @endif
                     </td>
-                    <td>
+                    <td style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                        <form action="{{ route('admin.users.toggle-admin', $user) }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            @if($user->is_admin)
+                                <button type="submit" class="btn btn-sm btn-outline" style="border-color: #f59e0b; color: #f59e0b;" 
+                                    {{ $adminCount <= 1 ? 'disabled title="Der letzte Admin kann nicht entfernt werden"' : '' }}
+                                    onclick="return confirm('Möchtest du diesem Benutzer wirklich die Admin-Rechte entziehen?');">
+                                    Admin entfernen
+                                </button>
+                            @else
+                                <button type="submit" class="btn btn-sm" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.5);" onclick="return confirm('Möchtest du diesen Benutzer zum Admin ernennen?');">
+                                    Zum Admin ernennen
+                                </button>
+                            @endif
+                        </form>
+
+                        @if(!$user->is_admin)
                         <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('Möchtest du diesen Benutzer unwiderruflich löschen? Alle Daten und Lesefortschritte gehen verloren.');">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn-danger btn-sm">Konto löschen</button>
                         </form>
+                        @endif
                     </td>
                 </tr>
             @empty

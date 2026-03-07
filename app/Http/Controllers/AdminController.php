@@ -49,14 +49,31 @@ class AdminController extends Controller
 
     public function users()
     {
-        // Get all users except current admin, with their reading sessions and ebooks
+        // Get all users except current admin
         $users = \App\Models\User::where('id', '!=', auth()->id())
-            ->where('is_admin', false)
             ->with(['readingSessions.ebook'])
             ->latest()
             ->get();
 
-        return view('admin.users', compact('users'));
+        $adminCount = \App\Models\User::where('is_admin', true)->count();
+
+        return view('admin.users', compact('users', 'adminCount'));
+    }
+
+    public function toggleAdmin(\App\Models\User $user)
+    {
+        if ($user->is_admin) {
+            // Cannot demote if they are the only admin
+            if (\App\Models\User::where('is_admin', true)->count() <= 1) {
+                return redirect()->back()->with('error', 'Du kannst dem letzten Admin nicht die Rechte entziehen.');
+            }
+            $user->update(['is_admin' => false]);
+            return redirect()->back()->with('success', $user->name . ' ist nun kein Administrator mehr.');
+        }
+        else {
+            $user->update(['is_admin' => true]);
+            return redirect()->back()->with('success', $user->name . ' wurde zum Administrator ernannt.');
+        }
     }
 
     public function deleteUser(\App\Models\User $user)
