@@ -113,6 +113,14 @@ class AiGenerationService
             return $body['candidates'][0]['content']['parts'][0]['text'] ?? 'Fehler beim Abrufen der Antwort.';
 
         }
+        catch (\GuzzleHttp\Exception\ClientException $e) {
+            $response = $e->getResponse();
+            if ($response && $response->getStatusCode() === 429) {
+                throw new \Exception('Das Limit der kostenlosen KI-Anfragen wurde erreicht (API Quota). Bitte warte etwas oder prüfe dein Google Cloud Konto.');
+            }
+            Log::error('AI Chat Client Error: ' . $response->getBody()->getContents());
+            throw new \Exception('Schnittstellen-Fehler beim Abrufen der KI-Antwort.');
+        }
         catch (\Exception $e) {
             Log::error('AI Chat Error: ' . $e->getMessage());
             throw new \Exception('Verbindungsfehler zur KI. Bitte später erneut versuchen.');
@@ -174,6 +182,14 @@ class AiGenerationService
 
             return $body['candidates'][0]['content']['parts'][0]['text'] ?? 'Fehler bei der Buchgenerierung.';
 
+        }
+        catch (\GuzzleHttp\Exception\ClientException $e) {
+            $response = $e->getResponse();
+            if ($response && $response->getStatusCode() === 429) {
+                throw new \Exception('Das Limit der kostenlosen KI-Anfragen wurde erreicht (API Quota). Bitte warte etwas oder prüfe dein Google Cloud Konto.');
+            }
+            Log::error('AI Gen Client Error: ' . $response->getBody()->getContents());
+            throw new \Exception('Schnittstellen-Fehler bei der Buchgenerierung.');
         }
         catch (\Exception $e) {
             Log::error('AI Generation Error: ' . $e->getMessage());
