@@ -140,9 +140,24 @@
                 <textarea class="form-control" name="verification_email_body" rows="12">{{ $settings['verification_email_body'] }}</textarea>
             </div>
             
-            <button type="submit" class="btn btn-submit">Einstellungen Speichern</button>
+        </div>
+
+        <!-- AI Settings -->
+        <div class="settings-panel glass" style="grid-column: 1 / -1;">
+            <h3>KI-Buchgenerator (OpenAI)</h3>
+            
+            <div class="info-text" style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                Damit Nutzer interaktiv Bücher generieren lassen können, wird ein API-Key benötigt (z. B. von OpenAI für ChatGPT).
+            </div>
+
+            <div class="form-group">
+                <label>LLM Provider API Key</label>
+                <input type="password" class="form-control" name="llm_api_key" value="{{ $settings['llm_api_key'] ?? '' }}" placeholder="API Key hier eintragen">
+            </div>
         </div>
     </div>
+    
+    <button type="submit" class="btn btn-submit">Einstellungen Speichern</button>
 </form>
 
 @endsection

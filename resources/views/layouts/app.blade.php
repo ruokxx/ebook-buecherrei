@@ -288,6 +288,7 @@
             <a href="{{ route('login') }}" class="btn btn-outline">Login</a>
             <a href="{{ route('register') }}" class="btn">Registrieren</a>
         @else
+            <a href="{{ route('generate.index') }}" style="color: var(--primary); font-weight: 600;">✨ KI-Buch generieren</a>
             @if(auth()->user()->is_admin)
                 <a href="{{ route('admin.index') }}" class="btn">Admin Panel</a>
                 <a href="{{ route('ebooks.create') }}" class="btn btn-outline">+ Upload</a>

@@ -16,10 +16,16 @@ class Ebook extends Model
         'chapters_count',
         'genre',
         'cover_path',
+        'generated_by',
     ];
 
     public function readingSessions()
     {
         return $this->hasMany(ReadingSession::class);
+    }
+
+    public function generator()
+    {
+        return $this->belongsTo(User::class , 'generated_by');
     }
 }

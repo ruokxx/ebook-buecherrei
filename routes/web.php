@@ -38,8 +38,13 @@ Route::post('/email/verification-notification', function (Request $request) {
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
 // User Protected Routes
-Route::middleware('auth')->group(function () {
-    Route::post('/ebooks/{ebook}/progress', [EbookController::class , 'saveProgress'])->name('ebooks.progress')->middleware('verified');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::post('/ebooks/{ebook}/progress', [EbookController::class , 'saveProgress'])->name('ebooks.progress');
+
+    // AI Book Generator
+    Route::get('/generate', [\App\Http\Controllers\AiBookController::class , 'create'])->name('generate.index');
+    Route::post('/generate/chat', [\App\Http\Controllers\AiBookController::class , 'chat'])->name('generate.chat');
+    Route::post('/generate/finalize', [\App\Http\Controllers\AiBookController::class , 'generate'])->name('generate.finalize');
 });
 
 // Admin Protected Routes

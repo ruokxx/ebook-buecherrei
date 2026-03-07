@@ -221,6 +221,9 @@
                 </div>
                 <div class="book-meta">
                     {{ $book->chapters_count }} Kapitel &bull; {{ strtoupper($book->file_type) }}
+                    @if($book->generated_by && $book->generator)
+                        <br><span style="color: var(--primary); font-size: 0.75rem;">✨ KI-generiert von {{ $book->generator->name }}</span>
+                    @endif
                 </div>
                 <div class="book-actions">
                     <a href="{{ route('ebooks.read', $book) }}" class="btn" style="width: 100%;">Lesen &rarr;</a>

@@ -98,6 +98,7 @@ class AdminController extends Controller
             'mail_from_name' => \App\Models\Setting::get('mail_from_name', 'Bücherei'),
             'verification_email_subject' => \App\Models\Setting::get('verification_email_subject', 'Bitte bestätige deine E-Mail-Adresse'),
             'verification_email_body' => \App\Models\Setting::get('verification_email_body', "Hallo {name},\n\nbitte klicke auf den folgenden Link, um deine E-Mail-Adresse zu bestätigen und deinen Account freizuschalten:\n\n{verification_url}\n\nViele Grüße,\nDein Bücherei Team"),
+            'llm_api_key' => \App\Models\Setting::get('llm_api_key', ''),
         ];
 
         return view('admin.settings', compact('settings'));

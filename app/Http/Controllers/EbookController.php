@@ -12,7 +12,7 @@ class EbookController extends Controller
     public function index()
     {
         // Group all ebooks by their genre
-        $genres = Ebook::latest()->get()->groupBy('genre');
+        $genres = Ebook::with('generator')->latest()->get()->groupBy('genre');
         return view('ebooks.index', compact('genres'));
     }
 
