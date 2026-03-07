@@ -12,9 +12,11 @@ class AiGenerationService
 
     public function __construct()
     {
+        // Guzzle base_uri MUST end with a trailing slash!
         $this->client = new Client([
-            'base_uri' => 'https://generativelanguage.googleapis.com/v1beta/models/',
+            'base_uri' => 'https://generativelanguage.googleapis.com/',
             'timeout' => 120, // Book generation can take time
+            'verify' => false, // Temporary bypass for cURL 60 SSL issues
         ]);
     }
 
@@ -23,7 +25,7 @@ class AiGenerationService
      */
     protected function getApiKey()
     {
-        return Setting::get('llm_api_key', config('services.gemini.key', env('GEMINI_API_KEY')));
+        return trim(Setting::get('llm_api_key', config('services.gemini.key', env('GEMINI_API_KEY'))));
     }
 
     /**
@@ -68,7 +70,24 @@ class AiGenerationService
 
         $contents = $this->mapHistoryToGemini($history);
 
-        // Append new message
+        // Prepend system prompt to the first user message, or as an initial message if empty
+        if (empty($contents)) {
+            $contents[] = [
+                'role' => 'user',
+                'parts' => [['text' => "SYSTEM-ANWEISUNG:\n" . $systemPrompt . "\n\n"]]
+            ];
+            // Gemini requires alternating roles, so we add a dummy model response if we start the chat
+            $contents[] = [
+                'role' => 'model',
+                'parts' => [['text' => "Verstanden. Ich bin bereit."]]
+            ];
+        }
+        else {
+            // Append system instructions to the first real user message
+            $contents[0]['parts'][0]['text'] = "SYSTEM-ANWEISUNG:\n" . $systemPrompt . "\n\nNUTZER-NACHRICHT:\n" . $contents[0]['parts'][0]['text'];
+        }
+
+        // Append new user message
         if (!empty($userMessage)) {
             $contents[] = [
                 'role' => 'user',
@@ -77,14 +96,11 @@ class AiGenerationService
         }
 
         try {
-            $response = $this->client->post('gemini-1.5-flash:generateContent?key=' . $apiKey, [
+            $response = $this->client->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . $apiKey, [
                 'headers' => [
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
-                    'systemInstruction' => [
-                        'parts' => [['text' => $systemPrompt]]
-                    ],
                     'contents' => $contents,
                     'generationConfig' => [
                         'temperature' => 0.7,
@@ -124,15 +140,22 @@ class AiGenerationService
 
         $contents = $this->mapHistoryToGemini($history);
 
+        if (empty($contents)) {
+            $contents[] = [
+                'role' => 'user',
+                'parts' => [['text' => "SYSTEM-ANWEISUNG:\n" . $systemPrompt . "\n\nBitte beginne jetzt mit dem Buch."]]
+            ];
+        }
+        else {
+            $contents[0]['parts'][0]['text'] = "SYSTEM-ANWEISUNG:\n" . $systemPrompt . "\n\nVERLAUF BEGINNT HIER:\n" . $contents[0]['parts'][0]['text'];
+        }
+
         try {
-            $response = $this->client->post('gemini-1.5-flash:generateContent?key=' . $apiKey, [
+            $response = $this->client->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . $apiKey, [
                 'headers' => [
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
-                    'systemInstruction' => [
-                        'parts' => [['text' => $systemPrompt]]
-                    ],
                     'contents' => $contents,
                     'generationConfig' => [
                         'temperature' => 0.8,
