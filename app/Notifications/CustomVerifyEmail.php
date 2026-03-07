@@ -26,20 +26,13 @@ class CustomVerifyEmail extends VerifyEmail
             $bodyTemplate
         );
 
-        $mailMessage = (new MailMessage)
-            ->subject($subject);
-
-        // Split by lines to add as text lines in the default Laravel mail template
         $lines = explode("\n", $body);
-        foreach ($lines as $line) {
-            if (trim($line) === '{verification_button}') {
-                $mailMessage->action('E-Mail Bestätigen', $verificationUrl);
-            }
-            else {
-                $mailMessage->line($line);
-            }
-        }
 
-        return $mailMessage;
+        return (new MailMessage)
+            ->subject($subject)
+            ->view('emails.verify', [
+            'lines' => $lines,
+            'verificationUrl' => $verificationUrl
+        ]);
     }
 }
